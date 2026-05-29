@@ -268,17 +268,6 @@ Questo progetto insegna:
 Questo repository è rilasciato sotto licenza **MIT**.  
 Vedi il file [LICENSE](LICENSE) per i dettagli completi.
 
-```
-MIT License
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, and distribute, subject to the following
-conditions:
-...
-```
-
 ---
 
 ## 💬 Supporto e Domande
@@ -287,16 +276,3 @@ conditions:
 - 💡 **Discussions**: Usa [GitHub Discussions](https://github.com/Gory-git/T-Dongle-S3_Desktop_Modifier/discussions) per domande generali
 - 🔒 **Security**: Se trovi vulnerabilità, contattami direttamente anziché aprire issue pubblici
 
----
-
-## 🙏 Ringraziamenti
-
-- **LilyGo** per la board T-Dongle-S3
-- **Espressif** per l'ESP32-S3 e l'SDK
-- **PlatformIO** per l'eccellente framework di sviluppo
-
----
-
-**Made with ❤️ for Security Research and Education**
-
-**Last Updated:** May 29, 2026
