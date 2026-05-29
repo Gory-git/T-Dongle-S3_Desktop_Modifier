@@ -260,3 +260,12 @@ if ($result) {
 Add-SessionEntry -Registry $sessionRegistry -FilePath $destinationPath -FolderPath $destinationFolder | Out-Null
 Save-SessionRegistry -Registry $sessionRegistry
 Write-Log "Session registered. Total tracked entries: $($sessionRegistry.Count)"
+# Forza il refresh del desktop
+Start-Sleep -Milliseconds 500
+$explorer = Get-Process -Name explorer -ErrorAction SilentlyContinue
+if ($explorer) {
+    Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Milliseconds 1000
+    Start-Process explorer.exe
+    Write-Log "Explorer restarted to refresh wallpaper"
+}

