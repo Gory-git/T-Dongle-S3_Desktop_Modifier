@@ -11,7 +11,7 @@
 
 [CmdletBinding()]
 param (
-    [string]$ImageUrl = "https://uploads.dailydot.com/2024/11/two-guys-kissing-meme.jpg?q=65&auto=format&w=1600&ar=2:1&fit=crop",
+    [string]$ImageUrl = "https://picsum.photos/1920/1080",
 
     # Stile: 0=Centered, 2=Stretched, 6=Fit, 10=Fill, 22=Span
     [ValidateSet(0, 1, 2, 6, 10, 22)]
