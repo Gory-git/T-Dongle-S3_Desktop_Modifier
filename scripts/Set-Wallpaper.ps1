@@ -109,8 +109,8 @@ $result = [NativeMethods]::SystemParametersInfo(20, 0, $destinationPath, 3)
 
 if ($result) {
     Write-Log "Wallpaper applied successfully: $destinationPath"
-    Write-Host "Wallpaper updated successfully." -ForegroundColor Green
-    Write-Host "   Path : $destinationPath"
+    Write-Verbose "Wallpaper updated successfully."
+    Write-Verbose "   Path : $destinationPath"
 } else {
     $errCode = [System.Runtime.InteropServices.Marshal]::GetLastWin32Error()
     Write-Log "SystemParametersInfo failed. Win32 error: $errCode" -Level "ERROR"

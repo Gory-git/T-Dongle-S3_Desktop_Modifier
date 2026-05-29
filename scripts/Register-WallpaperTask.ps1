@@ -40,6 +40,6 @@ Register-ScheduledTask `
     -RunLevel   Limited `
     -Force | Out-Null
 
-Write-Host "Task '$taskName' registered successfully." -ForegroundColor Green
-Write-Host "   Script path : $scriptPath"
-Write-Host "   Trigger     : At logon for $env:USERNAME"
+Write-Verbose "Task '$taskName' registered successfully."
+Write-Verbose "   Script path : $scriptPath"
+Write-Verbose "   Trigger     : At logon for $env:USERNAME"
