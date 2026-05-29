@@ -15,10 +15,7 @@ param (
 
     # Stile: 0=Centered, 2=Stretched, 6=Fit, 10=Fill, 22=Span
     [ValidateSet(0, 1, 2, 6, 10, 22)]
-    [int]$WallpaperStyle = 10,
-
-    # Se $true, elimina i wallpaper scaricati nelle sessioni precedenti
-    [bool]$CleanupOldFiles = $true
+    [int]$WallpaperStyle = 10
 )
 
 Set-StrictMode -Version Latest
@@ -26,25 +23,13 @@ $ErrorActionPreference = 'Stop'
 
 # ── COSTANTI ───────────────────────────────────────────────────────────────────
 
-# File di registro: mappa ogni sessione → path usato
-# Viene salvato in AppData per non dipendere dalla cartella random
-$registryFile = "$env:APPDATA\WallpaperScript\session_registry.json"
-
-# Pool di cartelle "padre" tra cui scegliere casualmente
-$parentFolderPool = @(
-    $env:TEMP,
-    "$env:LOCALAPPDATA\Microsoft\Windows",
-    "$env:APPDATA\Microsoft\Windows",
-    "$env:USERPROFILE\AppData\LocalLow",
-    [System.IO.Path]::GetTempPath()
-)
-
-# Estensioni valide coerenti con l'URL
-$validExtensions = @("jpg", "jpeg", "png", "bmp")
-
-# ── 1. Logging helper ────────────────────────────────────────────────────────
+# Log file
 $logFile = "$env:APPDATA\WallpaperScript\wallpaper.log"
 
+# Cartella per il download
+$downloadFolder = "$env:TEMP\WallpaperDownloads"
+
+# ── 1. Logging helper ────────────────────────────────────────────────────────
 function Write-Log {
     param([string]$Message, [string]$Level = "INFO")
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
@@ -58,120 +43,7 @@ function Write-Log {
     Add-Content -Path $logFile -Value $entry -ErrorAction SilentlyContinue
 }
 
-# ── 2. Generatore di path randomico ──────────────────────────────────────────
-function New-RandomWallpaperPath {
-    <#
-    .SYNOPSIS
-        Generates a fully random destination path for the wallpaper file.
-    .OUTPUTS
-        [hashtable] with keys: FolderPath, FilePath, FolderName, FileName
-    #>
-
-    # Cartella padre casuale dal pool
-    $parentFolder = $parentFolderPool | Get-Random
-
-    # Nome cartella: aggettivo + sostantivo + numero (es. "silent_bridge_4821")
-    # Rende il nome plausibile come cartella di sistema/app
-    $adjectives = @(
-        "silent","local","common","native","shared","system",
-        "default","managed","remote","secure","active","runtime"
-    )
-    $nouns = @(
-        "bridge","cache","config","data","handler","index",
-        "loader","module","parser","queue","router","worker"
-    )
-    $randomSuffix = Get-Random -Minimum 1000 -Maximum 9999
-    $folderName   = "{0}_{1}_{2}" -f ($adjectives | Get-Random), ($nouns | Get-Random), $randomSuffix
-
-    # Nome file: GUID troncato + estensione casuale
-    $guid      = [System.Guid]::NewGuid().ToString("N").Substring(0, 12)  # es. "3f8a1c9d2b7e"
-    $extension = $validExtensions | Get-Random
-    $fileName  = "{0}.{1}" -f $guid, $extension
-
-    $folderPath = Join-Path -Path $parentFolder -ChildPath $folderName
-    $filePath   = Join-Path -Path $folderPath   -ChildPath $fileName
-
-    return @{
-        FolderPath = $folderPath
-        FilePath   = $filePath
-        FolderName = $folderName
-        FileName   = $fileName
-    }
-}
-
-# ── 3. Gestione registro sessioni ─────────────────────────────────────────────
-function Get-SessionRegistry {
-    $registryDir = Split-Path $registryFile
-    if (-not (Test-Path $registryDir)) {
-        New-Item -ItemType Directory -Path $registryDir -Force | Out-Null
-    }
-
-    if (Test-Path $registryFile) {
-        try {
-            $content = Get-Content $registryFile -Raw | ConvertFrom-Json
-            # ConvertFrom-Json restituisce PSCustomObject; convertiamo in lista
-            return [System.Collections.Generic.List[object]]($content)
-        }
-        catch {
-            Write-Log "Registry file corrupted, resetting." -Level "WARN"
-        }
-    }
-    return [System.Collections.Generic.List[object]]::new()
-}
-
-function Save-SessionRegistry {
-    param([System.Collections.Generic.List[object]]$Registry)
-    if ($Registry.Count -gt 0) {
-        $Registry | ConvertTo-Json -Depth 3 | Set-Content -Path $registryFile -Encoding UTF8
-    }
-}
-
-function Add-SessionEntry {
-    param(
-        [System.Collections.Generic.List[object]]$Registry,
-        [string]$FilePath,
-        [string]$FolderPath
-    )
-    $entry = [PSCustomObject]@{
-        SessionId  = [System.Guid]::NewGuid().ToString()
-        FilePath   = $FilePath
-        FolderPath = $FolderPath
-        Timestamp  = (Get-Date -Format "o")  # ISO 8601
-    }
-    $Registry.Add($entry)
-    return $entry
-}
-
-# ── 4. Cleanup sessioni precedenti ───────────────────────────────────────────
-function Remove-OldWallpapers {
-    param([System.Collections.Generic.List[object]]$Registry)
-
-    # Mantieni solo l'ultima sessione (quella corrente non è ancora aggiunta)
-    $toRemove = $Registry | Select-Object -SkipLast 0  # tutte le precedenti
-
-    foreach ($entry in $toRemove) {
-        try {
-            if (Test-Path $entry.FilePath) {
-                Remove-Item -Path $entry.FilePath -Force
-                Write-Log "Deleted old wallpaper: $($entry.FilePath)"
-            }
-            # Rimuovi la cartella solo se è vuota
-            if ((Test-Path $entry.FolderPath) -and
-                @(Get-ChildItem $entry.FolderPath -Force).Count -eq 0) {
-                Remove-Item -Path $entry.FolderPath -Force
-                Write-Log "Deleted empty folder: $($entry.FolderPath)"
-            }
-        }
-        catch {
-            Write-Log "Could not delete $($entry.FilePath): $_" -Level "WARN"
-        }
-    }
-
-    # Svuota il registro (il nuovo entry verrà aggiunto dopo)
-    $Registry.Clear()
-}
-
-# ── 5. P/Invoke: Win32 SystemParametersInfo ──────────────────────────────────
+# ── 2. P/Invoke: Win32 SystemParametersInfo ──────────────────────────────────
 $signature = @"
 using System;
 using System.Runtime.InteropServices;
@@ -197,28 +69,18 @@ if (-not ([System.Management.Automation.PSTypeName]'NativeMethods').Type) {
 
 Write-Log "--- New session started ---"
 
-# Carica registro sessioni
-$sessionRegistry = Get-SessionRegistry
-
-# Cleanup vecchi file (se abilitato) - Fix: controlla correttamente se la lista è vuota
-if ($CleanupOldFiles -and @($sessionRegistry).Count -gt 0) {
-    Write-Log "Cleanup enabled. Removing $(@($sessionRegistry).Count) previous entry/entries."
-    Remove-OldWallpapers -Registry $sessionRegistry
+# Crea cartella download se non esiste
+if (-not (Test-Path $downloadFolder)) {
+    New-Item -ItemType Directory -Path $downloadFolder -Force | Out-Null
 }
 
-# Genera path randomico
-$randomPath = New-RandomWallpaperPath
-$destinationFolder = $randomPath.FolderPath
-$destinationPath   = $randomPath.FilePath
+# Genera nome file casuale
+$guid = [System.Guid]::NewGuid().ToString("N").Substring(0, 12)
+$extension = "jpg"
+$fileName = "{0}.{1}" -f $guid, $extension
+$destinationPath = Join-Path -Path $downloadFolder -ChildPath $fileName
 
-Write-Log "Generated random folder : $destinationFolder"
-Write-Log "Generated random file   : $($randomPath.FileName)"
-
-# Crea cartella
-if (-not (Test-Path $destinationFolder)) {
-    New-Item -ItemType Directory -Path $destinationFolder -Force | Out-Null
-    Write-Log "Created folder: $destinationFolder"
-}
+Write-Log "Generated file: $fileName"
 
 # ── Download ─────────────────────────────────────────────────────────────────
 try {
@@ -237,18 +99,16 @@ catch {
     exit 1
 }
 
-# ── Registro del registro di Windows (stile sfondo) ──────────────────────────
+# ── Applica le impostazioni di Windows ────────────────────────────────────────
 $regPath = "HKCU:\Control Panel\Desktop"
 Set-ItemProperty -Path $regPath -Name WallpaperStyle -Value $WallpaperStyle
-Set-ItemProperty -Path $regPath -Name TileWallpaper  -Value $(if ($WallpaperStyle -eq 1) { 1 } else { 0 })
+Set-ItemProperty -Path $regPath -Name TileWallpaper -Value 0
 
 # ── Applica lo sfondo ────────────────────────────────────────────────────────
-Remove-ItemProperty -Path $regPath -Name "Wallpaper" -ErrorAction SilentlyContinue
-
 $result = [NativeMethods]::SystemParametersInfo(20, 0, $destinationPath, 3)
 
 if ($result) {
-    Write-Log "Wallpaper applied: $destinationPath"
+    Write-Log "Wallpaper applied successfully: $destinationPath"
     Write-Host "Wallpaper updated successfully." -ForegroundColor Green
     Write-Host "   Path : $destinationPath"
 } else {
@@ -268,9 +128,10 @@ if ($explorer) {
     Write-Log "Explorer restarted to refresh wallpaper"
 }
 
-# ── Salva la sessione nel registro ───────────────────────────────────────────
-Add-SessionEntry -Registry $sessionRegistry -FilePath $destinationPath -FolderPath $destinationFolder | Out-Null
-if (@($sessionRegistry).Count -gt 0) {
-    Save-SessionRegistry -Registry $sessionRegistry
-    Write-Log "Session registered. Total tracked entries: $(@($sessionRegistry).Count)"
-}
+# ── Pulisci vecchi file wallpaper (oltre 10 giorni) ──────────────────────────
+$cutoffDate = (Get-Date).AddDays(-10)
+Get-ChildItem -Path $downloadFolder -File -ErrorAction SilentlyContinue | 
+    Where-Object { $_.LastWriteTime -lt $cutoffDate } | 
+    Remove-Item -Force -ErrorAction SilentlyContinue
+
+Write-Log "Cleanup completed"
